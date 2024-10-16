@@ -1,0 +1,116 @@
+
+
+const express = require('express');
+const app = express();
+const port = 3000;
+
+// Indica ao servidor que iremos trabalhar com JSON 
+app.use(express.json());
+
+/*
+    Simula um banco de dados
+*/ 
+let items = [
+    { id: 1, name: "Engenharia de Software" },
+    { id: 2, name: "Sistemas de Informação" },
+];
+
+/**
+ * 
+ * Endpoint para buscar os dados da lista
+ * 
+ */
+
+app.get('/item', (req, res) => {
+    res.status(200).json(items);
+});
+
+//EXERCICIO 2
+// Rota para buscar item por ID
+app.get('/item/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const item = items.find(item => item.id === id);
+
+    if (item) {
+        res.status(200).json(item);
+    } else {
+        res.status(404).json({ message: "Item não encontrado" });
+    }
+});
+// EXERCICIO 1
+app.post('/item', (req, res) => {
+    const newItem = { id: items.length + 1, name, ... req.body};
+    const { name } = req.body;
+
+    // Validação do campo 'name'
+    if (!name || typeof name !== 'string' || name.length < 3) {
+        return res.status(400).json({ message: "O campo 'name' é obrigatório e deve ter pelo menos 3 caracteres." });
+    }else{
+       items.push(newItem);
+       return res.status(201).json(newItem);
+}
+})
+
+
+//EXERCICIO 3
+// Rota para atualizar um item
+app.patch('/item/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = items.findIndex(item => item.id === id);
+
+    if (index !== -1) {
+        const { name } = req.body;
+
+        // Verifica se o campo 'name' foi enviado e é válido
+        if (name && typeof name === 'string' && name.length >= 3) {
+            items[index].name = name; // Atualiza apenas o campo 'name'
+            res.status(200).json(items[index]);
+        } else {
+            return res.status(400).json({ message: "O campo 'name' deve ser uma string com pelo menos 3 caracteres." });
+        }
+    } else {
+        res.status(404).json({ message: "Item não encontrado!" });
+    }
+});
+
+//EXERCICIO 4
+// Rota para remover todos os itens
+app.delete('/item', (req, res) => {
+    items = []; // Limpa o array de itens
+    res.status(200).json({ message: "Todos os itens foram removidos!" });
+});
+
+// Vamos passar como parâmetro na chamada o id do objeto que irá ser excluído
+app.delete('/item/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = items.findIndex(item => item.id === id);
+    if (index !== -1) {
+        items.splice(index, 1);
+        res.status(200).json({ message: "Item removido!" });
+    } else {
+        res.status(404).json({ message: "Item não encontrado" });
+    }
+});
+
+app.put('/item/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = items.findIndex(item => item.id === id);
+    if (index !== -1) {
+        items[index] = { id, ...req.body };
+        res.status(200).json(items[index]);
+    } else {
+        res.status(404).json({ message: "Item não encontrado!" });
+    }
+});
+
+
+//EXERCICIO 5
+// Nova rota para contar os itens
+app.get('/item/count', (req, res) => {
+    const count = items.length; // Conta o número de itens
+    res.status(200).json({ count }); // Retorna o número de itens em um objeto
+});
+
+app.listen(port, () => {
+    console.log(`O servidor está rodando em http://localhost:${port}`);
+});
